@@ -46,7 +46,8 @@
 /apps/api/src/lib/scrape-url-safety.ts @emrekayat
 /apps/api/src/providers/scrape.ts @emrekayat
 
-# Persistence, storage, and migrations
+# Persistence, storage, migrations, and wallets
 /apps/api/src/lib/persistence.ts @emrekayat
 /apps/api/src/lib/storage/ @emrekayat
 /apps/api/src/scripts/migrate-db-json.ts @emrekayat
+/apps/web/src/lib/wallet/ @emrekayat
