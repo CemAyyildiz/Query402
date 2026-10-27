@@ -82,6 +82,13 @@ export function isSchemaCurrent(dbPath: string): boolean {
 }
 
 /**
+ * Bounded so a brief WAL writer doesn't fail a concurrent transaction with
+ * SQLITE_BUSY immediately; long enough to ride out normal contention
+ * without ever hanging the process indefinitely.
+ */
+const BUSY_TIMEOUT_MS = 5_000;
+
+/**
  * Restricts a newly created database file to owner-only access (0600) on
  * platforms that expose POSIX file modes. Windows ACLs don't map onto this
  * call the same way, so it's skipped there; the operational expectation on
@@ -138,6 +145,7 @@ export function getAnalyticsDb(dbPath: string): Database.Database {
     restrictToOwnerIfNewlyCreated(confinedPath, fileExistedBefore);
     database.pragma("journal_mode = WAL");
     database.pragma("foreign_keys = ON");
+    database.pragma(`busy_timeout = ${BUSY_TIMEOUT_MS}`);
     try {
       runMigrations(database);
     } catch (error) {

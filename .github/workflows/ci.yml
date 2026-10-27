@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+# CI never pushes changes back to the repository.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -30,13 +34,20 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
           cache: npm
+
+      - name: Static asset guard
+        run: |
+          node --test scripts/check-static-assets.test.mjs
+          node scripts/check-static-assets.mjs
 
       - name: Install dependencies
         run: npm ci
@@ -66,13 +77,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
           cache: npm
+
+      - name: Static asset guard
+        run: node scripts/check-static-assets.mjs
 
       - name: Install dependencies
         run: npm ci
@@ -121,12 +137,13 @@ jobs:
           fi
           echo "✓ No secrets detected."
 
+      # Reviewers only need the sanitized transcript while the run is still open.
       - name: Upload transcript artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: demo-transcript-${{ github.run_id }}
           path: transcript/
-          retention-days: 90
+          retention-days: 14
           if-no-files-found: error
 
       - name: Stop API
